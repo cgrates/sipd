@@ -140,3 +140,25 @@ func (m Message) Digest(secret string) string {
 	b3 := []byte(h1 + ":" + m.ValueFrom("Authorization", "nonce") + ":" + h2)
 	return fmt.Sprintf("%x", md5.Sum(b3))
 }
+
+// MethodFrom will return the SIP method form the given string
+func MethodFrom(value string) string {
+	return methodFromRegex.FindString(value)
+}
+
+// NameFrom will return the SIP name form the given string
+func NameFrom(value string) string {
+	return strings.TrimPrefix(nameFromRegex.FindString(value), "sip:")
+}
+
+// HostFrom will return the host form the given string
+func HostFrom(value string) (addr string) {
+	if addr = addrFromRegex1.FindString(value); addr != "" {
+		return
+	}
+	if addr = addrFromRegex2.FindString(value); addr != "" {
+		return
+	}
+	addr = strings.TrimPrefix(addrFromRegex3.FindString(value), "@")
+	return
+}
