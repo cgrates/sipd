@@ -7,7 +7,6 @@
 package sipd
 
 import (
-	"crypto/md5"
 	"fmt"
 	"regexp"
 	"strings"
@@ -30,8 +29,9 @@ var (
 // Message is the basic SIP Message
 type Message map[string]string
 
-// Parse populates the message using the string
-func (m Message) Parse(s string) error {
+// NewMessage populates the message using the string
+func NewMessage(s string) (m Message, err error) {
+	m = Message{}
 	var f bool
 	for i, v := range strings.Split(s, newLine) {
 		if i == 0 {
@@ -48,7 +48,7 @@ func (m Message) Parse(s string) error {
 		}
 		pair := strings.Split(v, seperator)
 		if len(pair) < 2 {
-			return fmt.Errorf("unexpected line: %q", v)
+			return nil, fmt.Errorf("unexpected line: %q", v)
 		}
 		if len(m[pair[0]]) > 0 {
 			m[pair[0]] = m[pair[0]] + "," + pair[1]
@@ -56,7 +56,7 @@ func (m Message) Parse(s string) error {
 			m[pair[0]] = pair[1]
 		}
 	}
-	return nil
+	return
 }
 
 func (m Message) String() string {
@@ -74,6 +74,7 @@ func (m Message) String() string {
 	return m["Request"] + newLine + s + newLine + m["Content"]
 }
 
+// Clone returns a clone of the current message
 func (m Message) Clone() (clone Message) {
 	clone = make(Message)
 	for key, val := range m {
@@ -92,26 +93,9 @@ func (m Message) UserFrom(key string) string {
 	return UserFrom(m[key])
 }
 
-func (m Message) NameFor(key, name string) {
-	if oldname := m.UserFrom(key); oldname != "" {
-		m[key] = strings.Replace(m[key], "sip:"+oldname, "sip:"+name, 1)
-	}
-}
-
 // HostFrom will return the host form the key
 func (m Message) HostFrom(key string) (addr string) {
 	return HostFrom(m[key])
-}
-
-func (m Message) AddrFor(key, addr string) {
-	if s := m.HostFrom(key); s != "" {
-		m[key] = strings.Replace(m[key], s, addr, 1)
-	}
-}
-
-func (m Message) ValueFrom(key, value string) string { // slow
-	s := strings.Replace(m[key], `"`, ``, -1)
-	return strings.TrimPrefix(regexp.MustCompile(value+`=[^ ,;>]*`).FindString(s), value+`=`)
 }
 
 // PrepareReply only updates the message for the reply
@@ -125,6 +109,26 @@ func (m Message) PrepareReply() {
 	return
 }
 
+/*
+// These methods are not used for the moment
+// when we need them decoment them
+func (m Message) NameFor(key, name string) {
+	if oldname := m.UserFrom(key); oldname != "" {
+		m[key] = strings.Replace(m[key], "sip:"+oldname, "sip:"+name, 1)
+	}
+}
+
+func (m Message) AddrFor(key, addr string) {
+	if s := m.HostFrom(key); s != "" {
+		m[key] = strings.Replace(m[key], s, addr, 1)
+	}
+}
+
+func (m Message) ValueFrom(key, value string) string { // slow
+	s := strings.Replace(m[key], `"`, ``, -1)
+	return strings.TrimPrefix(regexp.MustCompile(value+`=[^ ,;>]*`).FindString(s), value+`=`)
+}
+
 func (m Message) Digest(secret string) string {
 	// HA1=MD5(username:realm:password) HA2=MD5(method:digestURI) response=MD5(HA1:nonce:HA2)
 	b1 := []byte(m.ValueFrom("Authorization", "username") + ":" + m.ValueFrom("Authorization", "realm") + ":" + secret)
@@ -136,7 +140,7 @@ func (m Message) Digest(secret string) string {
 	b3 := []byte(h1 + ":" + m.ValueFrom("Authorization", "nonce") + ":" + h2)
 	return fmt.Sprintf("%x", md5.Sum(b3))
 }
-
+*/
 // MethodFrom will return the SIP method form the given string
 func MethodFrom(value string) string {
 	return methodFromRegex.FindString(value)
