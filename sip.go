@@ -82,33 +82,29 @@ func (m Message) Clone() (clone Message) {
 	return
 }
 
+// MethodFrom will return the SIP method form the key
 func (m Message) MethodFrom(key string) string {
-	return methodFromRegex.FindString(m[key])
+	return MethodFrom(m[key])
 }
 
-func (m Message) NameFrom(key string) string {
-	return strings.TrimPrefix(nameFromRegex.FindString(m[key]), "sip:")
+// UserFrom will return the SIP user form the key
+func (m Message) UserFrom(key string) string {
+	return UserFrom(m[key])
 }
 
 func (m Message) NameFor(key, name string) {
-	if oldname := m.NameFrom(key); oldname != "" {
+	if oldname := m.UserFrom(key); oldname != "" {
 		m[key] = strings.Replace(m[key], "sip:"+oldname, "sip:"+name, 1)
 	}
 }
 
-func (m Message) AddrFrom(key string) (addr string) {
-	if addr = addrFromRegex1.FindString(m[key]); addr != "" {
-		return
-	}
-	if addr = addrFromRegex2.FindString(m[key]); addr != "" {
-		return
-	}
-	addr = strings.TrimPrefix(addrFromRegex3.FindString(m[key]), "@")
-	return
+// HostFrom will return the host form the key
+func (m Message) HostFrom(key string) (addr string) {
+	return HostFrom(m[key])
 }
 
 func (m Message) AddrFor(key, addr string) {
-	if s := m.AddrFrom(key); s != "" {
+	if s := m.HostFrom(key); s != "" {
 		m[key] = strings.Replace(m[key], s, addr, 1)
 	}
 }
@@ -146,8 +142,8 @@ func MethodFrom(value string) string {
 	return methodFromRegex.FindString(value)
 }
 
-// NameFrom will return the SIP name form the given string
-func NameFrom(value string) string {
+// UserFrom will return the SIP user form the given string
+func UserFrom(value string) string {
 	return strings.TrimPrefix(nameFromRegex.FindString(value), "sip:")
 }
 
