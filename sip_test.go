@@ -1,4 +1,4 @@
-package sipd
+package sipingo
 
 import (
 	"reflect"

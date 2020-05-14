@@ -4,7 +4,7 @@
 // license that can be found in the LICENSE file.
 //
 
-package sipd
+package sipingo
 
 import (
 	"fmt"
