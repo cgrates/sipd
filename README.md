@@ -1,5 +1,7 @@
 # sipingo
 
+[![Build Status](https://secure.travis-ci.org/cgrates/sipingo.png)](http://travis-ci.org/cgrates/sipingo)
+[![GoDoc](https://godoc.org/github.com/cgrates/sipingo?status.svg)](https://godoc.org/github.com/cgrates/sipingo)
 ## Description
 
 sipingo is a simple SIP parser.
